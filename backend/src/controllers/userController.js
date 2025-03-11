@@ -4,6 +4,7 @@ import asyncHandler from 'express-async-handler';
 import User from '../models/auth/userModel.js';
 import generateToken from '../helpers/generateToken.js';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
 export const registerUser = asyncHandler(async (req, res) => {
     const { name, email, password } = req.body;
@@ -126,4 +127,55 @@ export const loginUser = asyncHandler(async (req, res) => {
         res.status(400).json({ message: "Invalid email or password" });
     }
 });
-    
+
+
+// logout user
+export const logoutUser = asyncHandler(async (req, res) => {
+    res.clearCookie("token");
+
+    res.status(200).json({ message: "Logged out successfully" });
+});
+
+// get user profile
+export const getUser = asyncHandler(async (req, res) => {
+    // get user details from the token -> 
+    const user = await User.findById(req.user._id).select("-password");
+
+    if(user){
+        res.status(200).json(user);
+    } else{
+        res.status(404).json({message: "User not found"});
+    }
+});
+
+// update user
+export const updateUser = asyncHandler(async (req, res) => {
+    // get user deatails from token --> protect middleware
+    const user = await User.findById(req.user._id);
+
+    if(user){
+        // // user properties to update
+        // const { name, bio, photo } = req.body;
+
+        // update user properties
+        user.name = req.body.name || user.name;
+        user.email = req.body.email || user.email;
+        user.photo = req.body.photo || user.photo;
+        user.bio = req.body.bio || user.bio;
+
+        // save the updated user details
+        const updatedUser = await user.save();
+
+        res.status(200).json({
+            _id: updatedUser._id,
+            name: updatedUser.name,
+            email: updatedUser.email,
+            role: updatedUser.role,
+            photo: updatedUser.photo,
+            bio: updatedUser.bio,
+            isVerified: updatedUser.isVerified,
+        });
+    } else{
+        res.status(404).json({message: "User not found"});
+    }
+});
