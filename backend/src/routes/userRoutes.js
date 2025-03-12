@@ -1,8 +1,8 @@
 
 import express from 'express';
-import { registerUser, loginUser, logoutUser, getUser, updateUser, userLoginStatus } from '../controllers/userController.js';
-import { verifyEmail, verifyUser, forgotPassword, resetPassword, changePassword } from '../controllers/userController.js';
-import { deleteUser, getAllUsers } from '../controllers/adminController.js';
+import { registerUser, loginUser, logoutUser, getUser, updateUser, userLoginStatus } from '../controllers/auth/userController.js';
+import { verifyEmail, verifyUser, forgotPassword, resetPassword, changePassword } from '../controllers/auth/userController.js';
+import { deleteUser, getAllUsers } from '../controllers/auth/adminController.js';
 import { protect, adminMiddleware, creatorMiddleware, varifiedMiddleware } from '../middleware/authMiddleware.js';
 
 const router = express.Router();

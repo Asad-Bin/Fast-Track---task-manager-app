@@ -1,6 +1,6 @@
  
 import asyncHandler from "express-async-handler";
-import User from "../models/auth/userModel.js";
+import User from "../../models/auth/userModel.js";
 
 
  export const deleteUser = asyncHandler(async (req, res) => {
