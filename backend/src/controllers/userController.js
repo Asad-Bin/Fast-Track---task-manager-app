@@ -336,7 +336,7 @@ export const forgotPassword = asyncHandler(async(req, res) => {
     }).save();
 
     // reset link
-    const resetLink = `%{process.env.CLIENT_URL}/reset-password/${passwordResetToken}`;
+    const resetLink = `${process.env.CLIENT_URL}/reset-password/${passwordResetToken}`;
 
     // send email to user
     const subject = "Fast Note - Password Reset";
@@ -354,4 +354,61 @@ export const forgotPassword = asyncHandler(async(req, res) => {
         console.log("Error sending email: ", error);
         return res.status(500).json({ message: "Email could not be sent" });
     }
+});
+
+// reset password
+export const resetPassword = asyncHandler(async (req, res) => {
+    const { resetPasswordToken } = req.params;
+    const { password } = req.body;
+
+    if(!password){
+        return res.status(400).json({ message: "Password is required" });
+    }
+
+    // hash the reset token
+    const hashToken = hashedToken(resetPasswordToken);
+
+    // check if token exists and has not expired
+    const userToken = await Token.findOne({
+        passwordResetToken: hashToken,
+        expiresAt: { $gt: Date.now() },
+    });
+
+    if(!userToken){
+        return res.status(400).json({ message: "Invalid or expired reset token" });
+    }
+
+    // find user with the user id in the token
+    const user = await User.findById(userToken.userId);
+
+    // update password
+    user.password = password;
+    await user.save();
+
+    res.status(200).json({ message: "Password update successfully" });
+});
+
+// change password
+export const changePassword = asyncHandler(async (req, res) => {
+    const { currentPassword, newPassword } = req.body;
+
+    // console.log(req.user);
+
+    if(!currentPassword || !newPassword){
+        return res.status(400).json({ message: "All fields are required" });
+    }
+
+    const user = await User.findById(req.user._id);
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+
+    // if current password doesn't match
+    if(!isMatch){
+        return res.status(400).json({ message: "Invalid Password" });
+    }
+
+    // reset password
+    user.password = newPassword;
+    await user.save();
+    return res.status(200).json({ message: "Password changed successfully" });
 });
