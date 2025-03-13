@@ -4,9 +4,7 @@ import { useUserContext } from "@/context/userContext";
 import React from "react";
 
 function SidebarProvider() {
-  const { user } = useUserContext();
-  const userId = user ? user._id : null;
-
+  const userId = useUserContext().user._id;
   return <>{userId && <Sidebar />}</>;
 }
 
