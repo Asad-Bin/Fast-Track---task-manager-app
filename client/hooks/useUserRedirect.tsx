@@ -4,16 +4,24 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 const useRedirect = (redirect: string) => {
-  const { user, loading } = useUserContext();
+  const { userLoginStatus } = useUserContext();
   const router = useRouter();
 
   useEffect(() => {
-    if (!user || !user.email) {
-      router.push(redirect);
-    }
+    const redirectUser = async () => {
+      try {
+        const isLoggedUser = await userLoginStatus();
 
-    // watch for changes to user, redirect, router
-  }, [user, redirect, router]);
+        if (!isLoggedUser) {
+          router.push(redirect);
+        }
+      } catch (error) {
+        console.log("Error in redirecting User", error);
+      }
+    };
+
+    redirectUser();
+  }, [redirect, userLoginStatus, router]);
 };
 
 export default useRedirect;
